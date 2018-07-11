@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "rope": "cpp",
+        "ostream": "cpp"
+    }
+}

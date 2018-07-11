@@ -612,7 +612,7 @@ void OBD::Mode03_Read(){
 
   Serial2.flush();
   Serial2.write("0103\r");
-  delay(1000);
+  delay(Delay_OBD2_Init);
   getResponse();
   
   /*Get pointer of "43" token*/
@@ -630,11 +630,22 @@ void OBD::Mode03_Read(){
       Mode03_Bit01_Trans(rxDta.substring(i,i+6));
       i+= 6;
   }
+
+  /*Reset rxDta*/
+  rxDta = "";
 };
 
-void Read_VIN(void){
+void OBD::Read_VIN(void){
 
-  rxDta = "014 0: 49 02 01 31 44 34 1: 47 50 30 30 52 35 35 2: 42 31 32 33 34 35 36";
+  Serial2.flush();
+  Serial2.write("0902\r");
+
+  delay(1000);
+  getResponse();
+
+  /*Data for testing*/
+  //rxDta = "014 0: 49 02 01 31 44 34 1: 47 50 30 30 52 35 35 2: 42 31 32 33 34 35 36";
+
   char str[100]; 
   /*Reset field in OBD VIN*/
   memset(str,'\0',100);
@@ -656,4 +667,7 @@ void Read_VIN(void){
       long int li1 = strtol (pEnd,&pEnd,16);
       OBD_VIN_ID[j++] = (char) li1;
   }
+
+  /*Reset rxDta*/
+  rxDta = "";
 };

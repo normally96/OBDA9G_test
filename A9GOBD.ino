@@ -27,7 +27,6 @@ void loop() {
   
   A9G.Send_TCP_data();
   OBD2.Mode03_Read();
-  for (int i = 0;i<DTC_count;i++) Serial.println(DTC_temp[i]);
 }
 
 
