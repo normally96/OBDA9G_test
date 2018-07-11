@@ -66,14 +66,25 @@ public:
 
       /*Translator*/  
       void Mode03_Bit01_Trans(String inStr);
+
+      void Read_VIN(void);
 };
 
-static int dataOBD[7];
+static int dataOBD[11];
 static String rxDta; // Uart buffer
 static byte modedata[160]; // check mode data
 
 /*Variable hold DTC's mode 3 OBD*/
 extern String DTC_temp[10]; 
 extern int DTC_count;
+
+/*Variable hold VIN ID of Vehicle*/
+extern String OBD_VIN_ID[18];
+
+typedef struct OBD_Buffer
+{
+      int DTC_count;
+      String OBD_VIN_ID[18];
+} OBD_Data;
 
 #endif

@@ -17,14 +17,15 @@ void setup() {
   Serial1.println("Setup done!"); 
 }
 void loop() {
-  // A9G.getData(10000);
+  A9G.getData(10000);
   
-  // if (millis() - previousJson > 2000) {
-  //   previousJson = millis();
-  //   A9G.JsonWrap(OBD2.getOBData());
-  // }
+  if (millis() - previousJson > 2000) {
+    previousJson = millis();
+    OBD2.Mode03_Read();
+    A9G.JsonWrap(OBD2.getOBData(),OBD_VIN_ID);
+  }
   
-  // A9G.Send_TCP_data();
+  A9G.Send_TCP_data();
   OBD2.Mode03_Read();
   for (int i = 0;i<DTC_count;i++) Serial.println(DTC_temp[i]);
 }

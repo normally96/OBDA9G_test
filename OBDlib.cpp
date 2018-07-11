@@ -5,6 +5,7 @@
 /*Variable hold DTC's mode 3 OBD*/
 String DTC_temp[10]; 
 int DTC_count;
+String OBD_VIN_ID[18];
 
 // đọc dữ liệu khi uart gửi về
 void OBD::getResponse(){
@@ -543,12 +544,15 @@ void OBD::SupportBoard(){
 int *OBD::getOBData(){
   int *pOBD = dataOBD;
   *pOBD = 6;
-  *(pOBD + 1) = ReadRPM();
+  *(pOBD + 1) = ReadThrottleposition(); 
   *(pOBD + 2) = ReadIntemperature();
   *(pOBD + 3) = ReadTemp();
-  *(pOBD + 4) = ReadThrottleposition();
-  *(pOBD + 5) = ReadMAF();
-  *(pOBD + 6) = ReadEngineoiltemperature();
+  *(pOBD + 4) = ReadRPM();
+  *(pOBD + 5) = ReadVoltage();
+  *(pOBD + 6) = ReadMAF();
+  *(pOBD + 7) = ReadTimingadvance();
+  *(pOBD + 8) = ReadFuelinjectiontiming();
+  *(pOBD + 9) = ReadEngineoiltemperature();
   return pOBD;
 }
 
@@ -625,5 +629,31 @@ void OBD::Mode03_Read(){
   while (i < rxDta.length()){
       Mode03_Bit01_Trans(rxDta.substring(i,i+6));
       i+= 6;
+  }
+};
+
+void Read_VIN(void){
+
+  rxDta = "014 0: 49 02 01 31 44 34 1: 47 50 30 30 52 35 35 2: 42 31 32 33 34 35 36";
+  char str[100]; 
+  /*Reset field in OBD VIN*/
+  memset(str,'\0',100);
+  memset(OBD_VIN_ID,'\0',20);
+
+  int i,j = 0;
+  while (rxDta[i]){
+    if (rxDta[i+1] == ':') {
+      i += 3;
+      continue;
+    }
+    str[j++] = rxDta[i];
+    i++;
+  }
+  
+  char * pEnd = &str[13];
+  char buff[]=" "; j =0;
+  for (i =0 ; i < 17; i ++){
+      long int li1 = strtol (pEnd,&pEnd,16);
+      OBD_VIN_ID[j++] = (char) li1;
   }
 };
