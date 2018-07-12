@@ -22,7 +22,7 @@ void loop() {
   if (millis() - previousJson > 2000) {
     previousJson = millis();
     OBD2.Mode03_Read();
-    A9G.JsonWrap(OBD2.getOBData(),OBD_VIN_ID);
+    A9G.JsonWrap(OBD2.getOBData(),DTC_buff);
   }
   
   A9G.Send_TCP_data();

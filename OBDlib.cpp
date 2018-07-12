@@ -3,11 +3,14 @@
 #include "OBDlib.h"
 
 /*Variable hold DTC's mode 3 OBD*/
-String DTC_temp[10]; 
+String DTC_buff[4]; 
 int DTC_count;
 String OBD_VIN_ID[18];
 
-// đọc dữ liệu khi uart gửi về
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Lay du lieu tu uart dua vao buffer
+*****************************************************/
 void OBD::getResponse(){
   while( Serial2.available()>0){
     char c = Serial2.read();
@@ -19,8 +22,13 @@ void OBD::getResponse(){
 #endif   
 }
 
-// đọc nhiệt độ nước làm mát
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Nhiet do nuoc lam mat
+*****************************************************/
 int OBD::ReadTemp(){
+
+  /*Return -1 if not support*/
   if (modedata[5] == 0){return -1;} // kiểm tra PID 05 có được hỗ trợ không?
 
   Serial2.flush();
@@ -28,7 +36,11 @@ int OBD::ReadTemp(){
 
   delay(Delay_getting_data);
   getResponse(); // gọi hàm đọc giá trị từ uart
+
+  /*Caculate due to OBD*/ 
   int Temp = strtol(&rxDta[10],0,16)-40; // chuyển đổi giá trị hex nhận được sang dec
+
+  /*Reset buffer*/
   rxDta =""; // xóa chuỗi vừa lưu để tiếp tục đọc giá trị khác
   
   return Temp;
@@ -39,14 +51,24 @@ int OBD::ReadTemp(){
 #endif   
 }
 
-// đọc tốc độ động cơ
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Toc do dong co (RPM)
+*****************************************************/
 int OBD::ReadRPM(){
+
+  /*Return -1 if not support*/
   if(modedata[12] == 0){return -1;}
+  
   Serial2.flush();
   Serial2.write(PID_RPM);
   delay(Delay_getting_data);
   getResponse(); 
+
+  /*Caculate due to OBD*/ 
   int vehicleRPM = ((strtol(&rxDta[10],0,16)*256)+strtol(&rxDta[13],0,16))/4;
+
+  /*Reset buffer*/
   rxDta = ""; 
 
   return vehicleRPM;
@@ -57,8 +79,13 @@ int OBD::ReadRPM(){
 #endif 
 }
 
-//đọc tốc độ xe
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Toc do xe (Vehicle Speed)
+*****************************************************/
 int OBD::ReadSpeed() {
+
+  /*Return -1 if not support*/
   if(modedata[13] == 0){return -1;}
 
   Serial2.flush();
@@ -66,7 +93,11 @@ int OBD::ReadSpeed() {
 
   delay(Delay_getting_data);
   getResponse();
+
+  /*Caculate due to OBD*/ 
   int vspeed = strtol(&rxDta[10],0,16);
+
+  /*Reset buffer*/
   rxDta ="";
 
   return vspeed;
@@ -77,9 +108,13 @@ int OBD::ReadSpeed() {
 #endif   
 }
 
-// đọc nhiệt độ khí nạp
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Nhiet do khi nap
+*****************************************************/
 int OBD::ReadIntemperature() {
 
+  /*Return -1 if not support*/
   if(modedata[15] == 0){return -1;}
 
   Serial2.flush();
@@ -88,7 +123,10 @@ int OBD::ReadIntemperature() {
   delay(Delay_getting_data);
   getResponse();
 
+  /*Caculate due to OBD*/ 
   int Intemp =(strtol(&rxDta[10],0,16))-40;
+
+  /*Reset buffer*/
   rxDta ="";
 
   return Intemp;
@@ -99,14 +137,24 @@ int OBD::ReadIntemperature() {
 #endif   
 }
 
-// đọc khối lượng khí nạp
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Khoi luong khi nap
+*****************************************************/
 int OBD::ReadMAF(){
+  /*Return -1 if not support*/
   if(modedata[18] == 0){return -1;}
+
   Serial2.flush();
   Serial2.write(PID_MAF_AIR_FLOW);
+
   delay(Delay_getting_data);
-  getResponse(); 
+  getResponse();
+
+  /*Caculate due to OBD*/ 
   int MAF=((strtol(&rxDta[10],0,16)*256)+strtol(&rxDta[13],0,16))/100;
+
+  /*Reset buffer*/
   rxDta = ""; 
 
   return MAF;
@@ -117,14 +165,26 @@ int OBD::ReadMAF(){
 #endif   
 }
 
-// đọc vị trí bướm ga
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Vi tri buom ga
+*****************************************************/
 int OBD::ReadThrottleposition() {
-//  if(modedata[17] == 0){return -1;}
-//  Serial2.flush();
+  /*Return -1 if not support*/
+  if(modedata[17] == 0){return -1;}
+
   Serial2.write(PID_THROTTLE_POS);
+  /*Reset Tx and send PID_THROTTLE_POS*/
+  Serial2.flush();
+  Serial2.write(PID_THROTTLE_POS);
+
   delay(Delay_getting_data);
   getResponse();
+
+  /*Caculate due to OBD*/
   int Thro_position = ((strtol(&rxDta[10],0,16))*100)/255;
+
+  /*Reset buffer*/
   rxDta ="";
 
   return Thro_position;
@@ -136,7 +196,10 @@ Serial1.print("VTBuomga: ");
 #endif   
 }
 
-// đọc vị trí bàn đạp ga
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Vi tri ban dap ga
+*****************************************************/
 int OBD::ReadPedalposition() {
   int Pposition = 0;
   if(modedata[90] == 0){return -1;}
@@ -144,12 +207,19 @@ int OBD::ReadPedalposition() {
   Serial2.write("015a\r");
   delay(Delay_getting_data);
   getResponse();
+
+  /*Caculate due to OBD*/
   Pposition = (strtol(&rxDta[10],0,16))*100/255;
+
+  /*Reset buffer*/
   rxDta ="";
   return Pposition;
 }
 
-//đọc góc đánh lửa sớm
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Goc danh lua som
+*****************************************************/
 int OBD::ReadTimingadvance (void) {
 
   if(modedata[14] == 0){return -1;} // return 1 if mode 14 not support
@@ -160,37 +230,57 @@ int OBD::ReadTimingadvance (void) {
   delay(Delay_getting_data);
   getResponse();
 
+  /*Caculate due to OBD*/
   int a = ((strtol(&rxDta[10],0,16))/2) - 64;
+  
+  /*Reset buffer*/
   rxDta ="";
   return a;
 }
 
-// đọc thời gian phun nhiên liệu
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Thoi gian phun nhien lieu
+*****************************************************/
 int OBD::ReadFuelinjectiontiming (void){
   int b = 0;
   if(modedata[93] == 0){return -1;}
   Serial2.flush();
   Serial2.write(PID_FUEL_INJ_TIME);
   delay(Delay_getting_data);
-  getResponse(); 
+  getResponse();
+
+  /*Caculate due to OBD*/ 
   b= (((strtol(&rxDta[10],0,16)*256)+strtol(&rxDta[13],0,16))/128)-210;
+
+  /*Reset buffer*/
   rxDta = ""; 
  return b;
 }
 
-// đọc nhiệt độ dầu động cơ
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Nhiet do dau dong co
+*****************************************************/
 int OBD::ReadEngineoiltemperature () {
-//  if(modedata[92] == 0){return -1;}
-//  Serial2.flush();
+  if(modedata[92] == 0){return -1;}
+  Serial2.flush();
   Serial2.write(PID_OIL_ENG_TEMP);
   delay(Delay_getting_data);
   getResponse();
+
+  /*Caculate due to OBD*/
   int c = strtol(&rxDta[10],0,16)-40;
+
+  /*Reset buffer*/
   rxDta ="";
   return c;
 }
 
-//đọc thời gian chạy của động cơ từ khi bắt đầu khởi động
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Thoi gian chay cua dong co tu luc khoi dong
+*****************************************************/
 int OBD::ReadRuntime(void){
 
   if(modedata[31] == 0){return -1;}
@@ -200,12 +290,18 @@ int OBD::ReadRuntime(void){
   delay(Delay_getting_data);
   getResponse(); 
 
+  /*Caculate due to OBD*/
   int runTime= (strtol(&rxDta[10],0,16)*256)+strtol(&rxDta[13],0,16);
+
+  /*Reset buffer*/
   rxDta = ""; 
   return runTime;
 }
 
-// đọc điện áp của accu
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc Dien ap ac quy
+*****************************************************/
 float OBD::ReadVoltage(void){
 
   Serial2.flush();
@@ -213,13 +309,20 @@ float OBD::ReadVoltage(void){
 
   delay(Delay_getting_data);
   getResponse(); 
+
+  /*Caculate due to OBD*/
   float Voltage = rxDta.substring(4,'V').toFloat();
+
+  /*Reset buffer*/
   rxDta ="";
   
   return Voltage;
 }
 
-//reset OBD
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Reset OBD II
+*****************************************************/
 int OBD::ResetOBDII (void){
   byte ResetBoard = 0;
   rxDta ="";
@@ -232,7 +335,10 @@ int OBD::ResetOBDII (void){
   return ResetBoard;
 }
 
-//kiểm tra kết nối với board
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Kiem tra ket noi voi ELM327
+*****************************************************/
 int OBD::SetupConnect (void){
   int g = 0;
   Serial2.flush();
@@ -247,7 +353,10 @@ int OBD::SetupConnect (void){
   return g;
 }
 
-//kiểm tra những PID nào được hỗ trợ
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Kiem tra PIDs mode 1 ho tro
+*****************************************************/
 void OBD::SupportBoard(){
 
   int m,a,b,c,d; 
@@ -541,9 +650,13 @@ void OBD::SupportBoard(){
     }
 }
 
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Lay ket qua xuat ra
+*****************************************************/
 int *OBD::getOBData(){
   int *pOBD = dataOBD;
-  *pOBD = 6;
+  *pOBD =10;
   *(pOBD + 1) = ReadThrottleposition(); 
   *(pOBD + 2) = ReadIntemperature();
   *(pOBD + 3) = ReadTemp();
@@ -556,6 +669,11 @@ int *OBD::getOBData(){
   return pOBD;
 }
 
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doi du lieu tho ra DTC
+  Comment     : VD: "03 40" -> "P0340"
+*****************************************************/
 void OBD::Mode03_Bit01_Trans(String inStr){
   String str = "00000";
   
@@ -597,12 +715,48 @@ void OBD::Mode03_Bit01_Trans(String inStr){
     case '7':
     str[0]= 'C';str[1]= '3';
     break;
+
+    case '8':
+    str[0]= 'B';str[1]= '0';
+    break;
+    
+    case '9':
+    str[0]= 'B';str[1]= '1';
+    break;
+    
+    case 'A':
+    str[0]= 'B';str[1]= '2';
+    break;
+
+    case 'B':
+    str[0]= 'B';str[1]= '3';
+    break;
+
+    case 'C':
+    str[0]= 'U';str[1]= '0';
+    break;
+
+    case 'D':
+    str[0]= 'U';str[1]= '1';
+    break;
+
+    case 'E':
+    str[0]= 'U';str[1]= '2';
+    break;
+
+    case 'F':
+    str[0]= 'U';str[1]= '3';
+    break;
   }
 
   /*Save DTC code in to DTC_temp array*/
-  DTC_temp[DTC_count++]= str;
+  DTC_buff[DTC_count++]= str;
 }
 
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc loi mode 3 OBD
+*****************************************************/
 void OBD::Mode03_Read(){
   /*Reset DTC's count to 0*/
   DTC_count = 0;
@@ -611,7 +765,8 @@ void OBD::Mode03_Read(){
   int temp = 0;
 
   Serial2.flush();
-  Serial2.write("0103\r");
+  Serial2.write("03\r");
+
   delay(Delay_OBD2_Init);
   getResponse();
   
@@ -635,6 +790,10 @@ void OBD::Mode03_Read(){
   rxDta = "";
 };
 
+/****************************************************
+  Author      : Phuoc, Hieu
+  Description : Doc so VIN cua xe 
+*****************************************************/
 void OBD::Read_VIN(void){
 
   Serial2.flush();

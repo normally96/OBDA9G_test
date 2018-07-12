@@ -64,19 +64,20 @@ public:
 
       void getResponse();  
 
-      /*Translator*/  
+      /*Chuyen doi ma loi Mode 3 OBD*/  
       void Mode03_Bit01_Trans(String inStr);
 
+      /*Doc so VIN*/
       void Read_VIN(void);
 };
 
 static int dataOBD[11];
-static String rxDta; // Uart buffer
-static byte modedata[160]; // check mode data
+static String rxDta;          // Uart buffer
+static byte modedata[160];    // check mode data
 
 /*Variable hold DTC's mode 3 OBD*/
-extern String DTC_temp[10]; 
-extern int DTC_count;
+extern String DTC_buff[4];    // Bien chua ma loi
+extern int DTC_count;         // Bien chua so loi
 
 /*Variable hold VIN ID of Vehicle*/
 extern String OBD_VIN_ID[18];

@@ -192,13 +192,13 @@ void A9G_Module::Send_TCP_data()
     root["a1"] = *(pOBD + 1);       // Throttleposition       // các du lieu dc truyen vao
     root["a2"] = *(pOBD + 2);       // Intemperature
     root["a3"] = *(pOBD + 3);       // Temp
-    root["io12"] = *(pOBD + 4);     
-    root["io13"] = *(pOBD + 5);
-    root["io14"] = *(pOBD + 6);
-    root["io15"] = *(pOBD + 7);
-    root["io16"] = *(pOBD + 8);
-    root["d1"] = *(pOBD + 9);     
-    root["d2"] = *(pOBD + 10);    // Number of DTC
+    root["io12"] = *(pOBD + 4);     // RPM
+    root["io13"] = *(pOBD + 5);     // Voltage
+    root["io14"] = *(pOBD + 6);     // MAF
+    root["io15"] = *(pOBD + 7);     // Timingadvance
+    root["io16"] = *(pOBD + 8);     // Fuelinjectiontiming
+    root["d1"] = *(pOBD + 9);       // Engineoiltemperature
+    root["d2"] = *(pOBD + 10);      // Number of DTC
     int sum_DTC = *(pOBD + 10);
 
     JsonArray& dtc = root.createNestedArray("dtc");
