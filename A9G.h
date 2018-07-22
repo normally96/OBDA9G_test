@@ -26,7 +26,7 @@ class A9G_Module
     String temp_lat, temp_long; 
     float LaDDMM, LoDDMM;
     String latitude, longitude; // toa do kinh , vi do
-    char Jsonstring[200];  // send this String
+    char Jsonstring[400];  // send this String
  
     
     void sendData_A9G(String command);

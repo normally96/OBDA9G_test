@@ -3,7 +3,7 @@
 #include "OBDlib.h"
 
 /*Variable hold DTC's mode 3 OBD*/
-String DTC_buff[4]; 
+String DTC_buff[10]; 
 int DTC_count;
 String OBD_VIN_ID[18];
 
@@ -762,8 +762,7 @@ void OBD::Mode03_Read(){
   DTC_count = 0;
 
   int i = 0;
-  int temp = 0;
-
+  
   Serial2.flush();
   Serial2.write("03\r");
 
@@ -781,7 +780,7 @@ void OBD::Mode03_Read(){
   i += 6;
 
   /*Get DTC's code and send to Translate function*/
-  while (i < rxDta.length()){
+  while ( (i+6) < rxDta.length()){
       Mode03_Bit01_Trans(rxDta.substring(i,i+6));
       i+= 6;
   }

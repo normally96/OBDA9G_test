@@ -76,16 +76,10 @@ static String rxDta;          // Uart buffer
 static byte modedata[160];    // check mode data
 
 /*Variable hold DTC's mode 3 OBD*/
-extern String DTC_buff[4];    // Bien chua ma loi
+extern String DTC_buff[10];    // Bien chua ma loi
 extern int DTC_count;         // Bien chua so loi
 
 /*Variable hold VIN ID of Vehicle*/
 extern String OBD_VIN_ID[18];
-
-typedef struct OBD_Buffer
-{
-      int DTC_count;
-      String OBD_VIN_ID[18];
-} OBD_Data;
 
 #endif
